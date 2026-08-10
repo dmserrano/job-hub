@@ -1,0 +1,22 @@
+# Local Postgres for job-hub. One instance; each service owns its own schema (ADR-0003).
+services:
+  postgres:
+    image: postgres:17
+    container_name: job-hub-postgres
+    restart: unless-stopped
+    environment:
+      POSTGRES_USER: jobhub
+      POSTGRES_PASSWORD: jobhub
+      POSTGRES_DB: jobhub
+    ports:
+      - "5432:5432"
+    volumes:
+      - job-hub-pgdata:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U jobhub -d jobhub"]
+      interval: 5s
+      timeout: 5s
+      retries: 10
+
+volumes:
+  job-hub-pgdata:
