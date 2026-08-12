@@ -1,4 +1,4 @@
-import { desc } from "drizzle-orm";
+import { desc, eq } from "drizzle-orm";
 import { db } from "./db/client";
 import {
   APPLICATION_STATUSES,
@@ -101,6 +101,7 @@ export const trackerService: TrackerService = {
     const rows = await db
       .select()
       .from(applications)
+      .where(eq(applications.ownerId, OWNER_ID))
       .orderBy(desc(applications.createdAt), desc(applications.id));
     return rows.map(toApplication);
   },

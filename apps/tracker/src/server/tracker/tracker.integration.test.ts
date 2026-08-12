@@ -4,6 +4,8 @@ import {
   migrateTestSchema,
   resetTestSchema,
 } from "../../../test/db";
+import { sql } from "./db/client";
+import { TRACKER_SCHEMA } from "./db/env";
 import { OWNER_ID, trackerService } from "./index";
 
 // Integration tests against the Tracker service's public interface. They assert
@@ -109,6 +111,25 @@ describe("tracker service", () => {
         company: { name: "Acme" },
         status: "Saved",
       });
+    });
+
+    it("returns only the Owner's applications, not other owners' rows", async () => {
+      const mine = await trackerService.createApplication({
+        company: { name: "Acme" },
+        role: { title: "Staff Engineer" },
+      });
+      // Seed a row for a different owner directly — the public interface only
+      // ever writes as OWNER_ID, so scoping can't be exercised through it.
+      await sql`
+        INSERT INTO ${sql(TRACKER_SCHEMA)}.applications
+          (owner_id, company_name, role_title)
+        VALUES ('someone-else', 'Globex', 'Principal Engineer')
+      `;
+
+      const apps = await trackerService.listApplications();
+
+      expect(apps.map((a) => a.id)).toEqual([mine.id]);
+      expect(apps.every((a) => a.ownerId === OWNER_ID)).toBe(true);
     });
 
     it("persists applications across separate service calls (fresh reads)", async () => {
