@@ -8,6 +8,20 @@
       "when": 1786391742332,
       "tag": "0000_flippant_ben_grimm",
       "breakpoints": true
+    },
+    {
+      "idx": 1,
+      "version": "7",
+      "when": 1786493250995,
+      "tag": "0001_loud_juggernaut",
+      "breakpoints": true
+    },
+    {
+      "idx": 2,
+      "version": "7",
+      "when": 1786493283569,
+      "tag": "0002_broken_george_stacy",
+      "breakpoints": true
     }
   ]
 }

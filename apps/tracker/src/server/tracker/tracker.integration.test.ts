@@ -4,11 +4,11 @@ import {
   migrateTestSchema,
   resetTestSchema,
 } from "../../../test/db";
-import { trackerService } from "./index";
+import { OWNER_ID, trackerService } from "./index";
 
-// Integration tests at the Tracker service seam. They assert external behavior
-// (returned values + persisted state) against real Postgres, never ORM/SQL
-// internals — they should survive a rewrite of the query layer.
+// Integration tests against the Tracker service's public interface. They assert
+// external behavior (returned values + persisted state) against real Postgres,
+// never ORM/SQL internals — they should survive a rewrite of the query layer.
 describe("tracker service", () => {
   beforeAll(async () => {
     await migrateTestSchema();
@@ -22,26 +22,104 @@ describe("tracker service", () => {
     await closeTestDb();
   });
 
-  it("persists a probe and reads it back on checkConnection", async () => {
-    const probe = await trackerService.checkConnection("hello");
+  describe("createApplication", () => {
+    it("persists an application and returns it with a generated id", async () => {
+      const app = await trackerService.createApplication({
+        company: { name: "Acme", link: "https://acme.example" },
+        role: {
+          title: "Staff Engineer",
+          postingLink: "https://acme.example/jobs/42",
+          location: "Remote",
+          comp: "$250k",
+        },
+      });
 
-    expect(probe.id).toBeGreaterThan(0);
-    expect(probe.note).toBe("hello");
-    expect(probe.createdAt).toBeInstanceOf(Date);
+      expect(app.id).toBeGreaterThan(0);
+      expect(app.ownerId).toBe(OWNER_ID);
+      expect(app.company).toEqual({ name: "Acme", link: "https://acme.example" });
+      expect(app.role).toEqual({
+        title: "Staff Engineer",
+        postingLink: "https://acme.example/jobs/42",
+        location: "Remote",
+        comp: "$250k",
+      });
+      expect(app.createdAt).toBeInstanceOf(Date);
+      expect(app.updatedAt).toBeInstanceOf(Date);
+    });
+
+    it("defaults Status to Saved when none is given", async () => {
+      const app = await trackerService.createApplication({
+        company: { name: "Acme" },
+        role: { title: "Staff Engineer" },
+      });
+
+      expect(app.status).toBe("Saved");
+    });
+
+    it("honors an explicit Status", async () => {
+      const app = await trackerService.createApplication({
+        company: { name: "Acme" },
+        role: { title: "Staff Engineer" },
+        status: "Applied",
+      });
+
+      expect(app.status).toBe("Applied");
+    });
+
+    it("stores omitted optional fields as null", async () => {
+      const app = await trackerService.createApplication({
+        company: { name: "Acme" },
+        role: { title: "Staff Engineer" },
+      });
+
+      expect(app.company.link).toBeNull();
+      expect(app.role.postingLink).toBeNull();
+      expect(app.role.location).toBeNull();
+      expect(app.role.comp).toBeNull();
+    });
   });
 
-  it("counts the probes that have been persisted", async () => {
-    expect(await trackerService.countProbes()).toBe(0);
+  describe("listApplications", () => {
+    it("returns an empty list when none exist", async () => {
+      expect(await trackerService.listApplications()).toEqual([]);
+    });
 
-    await trackerService.checkConnection("one");
-    await trackerService.checkConnection("two");
+    it("lists every persisted application, newest first", async () => {
+      const first = await trackerService.createApplication({
+        company: { name: "Acme" },
+        role: { title: "Staff Engineer" },
+      });
+      const second = await trackerService.createApplication({
+        company: { name: "Globex" },
+        role: { title: "Principal Engineer" },
+        status: "Screen",
+      });
 
-    expect(await trackerService.countProbes()).toBe(2);
-  });
+      const apps = await trackerService.listApplications();
 
-  it("isolates state between tests via the reset harness", async () => {
-    // If the beforeEach reset works, this test starts empty despite the
-    // previous test having written rows.
-    expect(await trackerService.countProbes()).toBe(0);
+      expect(apps.map((a) => a.id)).toEqual([second.id, first.id]);
+      expect(apps[0]).toMatchObject({
+        id: second.id,
+        company: { name: "Globex" },
+        role: { title: "Principal Engineer" },
+        status: "Screen",
+      });
+      expect(apps[1]).toMatchObject({
+        id: first.id,
+        company: { name: "Acme" },
+        status: "Saved",
+      });
+    });
+
+    it("persists applications across separate service calls (fresh reads)", async () => {
+      await trackerService.createApplication({
+        company: { name: "Acme" },
+        role: { title: "Staff Engineer" },
+      });
+
+      // A second, independent list call sees the committed row — nothing is
+      // held only in memory.
+      expect(await trackerService.listApplications()).toHaveLength(1);
+    });
   });
 });
