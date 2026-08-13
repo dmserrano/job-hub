@@ -7,6 +7,8 @@ export const metadata: Metadata = {
   description: "Track job applications through the pipeline.",
 };
 
+// The system font stack is the theme's `--font-sans` (globals.css) and is
+// applied to <html> by the base layer — no webfont to fetch at build time.
 export default function RootLayout({ children }: { children: ReactNode }) {
   return (
     <html lang="en">

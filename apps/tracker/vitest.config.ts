@@ -2,6 +2,8 @@ import { fileURLToPath } from "node:url";
 import { defineConfig } from "vitest/config";
 
 export default defineConfig({
+  // tsconfig sets `jsx: preserve` for Next to handle; tests need it compiled.
+  esbuild: { jsx: "automatic" },
   resolve: {
     alias: {
       // Mirror the tsconfig `@/*` path so tests import UI code (server actions)
@@ -11,7 +13,9 @@ export default defineConfig({
   },
   test: {
     environment: "node",
-    include: ["src/**/*.integration.test.ts"],
+    // Unit tests (`*.test.ts`) and integration tests (`*.integration.test.ts`);
+    // only the latter need a running Postgres.
+    include: ["src/**/*.test.ts"],
     // Injected before any module import, so the schema/client resolve to the
     // disposable tracker_test schema. dotenv (in env.ts) won't override it.
     env: {

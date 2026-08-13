@@ -27,6 +27,8 @@ job search/aggregation) hang off it.
   another's tables. See ADR-0003.
 - **Stack:** Next.js (App Router) + TypeScript + React, Drizzle ORM, Postgres in Docker.
   See ADR-0005.
+- **Styling:** Tailwind v4 + shadcn/ui, plus domain design tokens for Status and urgency.
+  See ADR-0006.
 
 ## MVP scope (the wedge — Application Tracker)
 
