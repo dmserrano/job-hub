@@ -38,14 +38,16 @@ export interface Application {
   updatedAt: Date;
 }
 
+// A create-input shape derived from a domain type: the listed keys stay
+// required; every other field becomes optional (omittable or null). Derived
+// from the domain types so a new Company/Role field can't drift out of sync
+// with its input (see CODING_STANDARDS.md — single source of truth).
+type CreateInput<T, RequiredKeys extends keyof T> = Pick<T, RequiredKeys> &
+  Partial<Omit<T, RequiredKeys>>;
+
 export interface CreateApplicationInput {
-  company: { name: string; link?: string | null };
-  role: {
-    title: string;
-    postingLink?: string | null;
-    location?: string | null;
-    comp?: string | null;
-  };
+  company: CreateInput<Company, "name">;
+  role: CreateInput<Role, "title">;
   /** Defaults to `Saved` when omitted. */
   status?: ApplicationStatus;
 }
