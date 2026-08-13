@@ -65,6 +65,16 @@ own `dark:` utilities behave under either.
 - Accessible primitives (dialog, select, date input, dropdown) arrive with the components
   rather than being hand-built per ticket — the payoff lands on #4, #6, #7 and #8.
 - shadcn components are vendored source: upgrades are deliberate re-adds, not a version bump.
+  One caveat on that: `globals.css` keeps shadcn's generated `@import "shadcn/tailwind.css"`,
+  so the chosen style's base CSS is resolved from the `shadcn` package at build time rather
+  than copied in. It is a dev dependency pinned by the lockfile, not a runtime one, but it does
+  mean a `shadcn` bump can shift base styling — worth checking on upgrade.
+- Radix's `Select` replaces the native one, so the status control needs hydration to open.
+  Submitting before then omits `status`, which lands on the column's `Saved` default — the same
+  value the trigger displays — so the form still agrees with itself. The text inputs are
+  unaffected.
+- `Urgency` (overdue / due soon / stale) was new vocabulary; it has been added to the
+  `CONTEXT.md` glossary rather than left to drift.
 - ESLint had to be configured for real (flat config, `eslint-config-next` pinned to the Next 15
   line) — `next lint` was deprecated and only ever dropped into an interactive setup prompt, so
   `pnpm lint` had never actually passed.

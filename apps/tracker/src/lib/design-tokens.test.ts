@@ -13,7 +13,13 @@ const css = readFileSync(
 // --- Minimal oklch → sRGB → WCAG contrast, so the AA claim is checked rather
 // than asserted in a comment. Test-only; nothing ships with this.
 
-function clamp(channel: number): number {
+// Clamping an out-of-gamut channel would make the computed ratio disagree with
+// what a browser paints, so refuse rather than fudge — every token must be a
+// colour sRGB can actually show.
+function inGamut(channel: number): number {
+  if (channel < -1e-6 || channel > 1 + 1e-6) {
+    throw new Error(`Channel ${channel} is outside the sRGB gamut`);
+  }
   return Math.min(1, Math.max(0, channel));
 }
 
@@ -31,9 +37,9 @@ function oklchToLinearSrgb(
   const short = (l - 0.0894841775 * a - 1.291485548 * b) ** 3;
 
   return [
-    clamp(4.0767416621 * long - 3.3077115913 * medium + 0.2309699292 * short),
-    clamp(-1.2684380046 * long + 2.6097574011 * medium - 0.3413193965 * short),
-    clamp(-0.0041960863 * long - 0.7034186147 * medium + 1.707614701 * short),
+    inGamut(4.0767416621 * long - 3.3077115913 * medium + 0.2309699292 * short),
+    inGamut(-1.2684380046 * long + 2.6097574011 * medium - 0.3413193965 * short),
+    inGamut(-0.0041960863 * long - 0.7034186147 * medium + 1.707614701 * short),
   ];
 }
 

@@ -1,3 +1,4 @@
+import type { ReactNode } from "react";
 import { createApplicationAction } from "./actions";
 import { StatusBadge } from "@/components/status-badge";
 import { Button } from "@/components/ui/button";
@@ -37,17 +38,34 @@ function formatLink(url: string | null, label: string | null) {
   );
 }
 
-// One labelled text input in the add-application form.
+// A labelled control in the add-application form. The label points at `name`,
+// so whatever control goes inside must carry `id={name}`.
 function Field({
+  name,
+  label,
+  children,
+}: {
+  name: string;
+  label: string;
+  children: ReactNode;
+}) {
+  return (
+    <div className="flex flex-col gap-1.5">
+      <Label htmlFor={name}>{label}</Label>
+      {children}
+    </div>
+  );
+}
+
+function TextField({
   name,
   label,
   ...props
 }: React.ComponentProps<typeof Input> & { name: string; label: string }) {
   return (
-    <div className="flex flex-col gap-1.5">
-      <Label htmlFor={name}>{label}</Label>
+    <Field name={name} label={label}>
       <Input id={name} name={name} {...props} />
-    </div>
+    </Field>
   );
 }
 
@@ -68,15 +86,17 @@ export default async function Home() {
           action={createApplicationAction}
           className="flex max-w-md flex-col gap-3"
         >
-          <Field name="companyName" label="Company name *" required />
-          <Field name="companyLink" label="Company link" type="url" />
-          <Field name="roleTitle" label="Role title *" required />
-          <Field name="rolePostingLink" label="Posting link" type="url" />
-          <Field name="roleLocation" label="Location" />
-          <Field name="roleComp" label="Comp" />
+          <TextField name="companyName" label="Company name *" required />
+          <TextField name="companyLink" label="Company link" type="url" />
+          <TextField name="roleTitle" label="Role title *" required />
+          <TextField name="rolePostingLink" label="Posting link" type="url" />
+          <TextField name="roleLocation" label="Location" />
+          <TextField name="roleComp" label="Comp" />
 
-          <div className="flex flex-col gap-1.5">
-            <Label htmlFor="status">Status</Label>
+          <Field name="status" label="Status">
+            {/* Omitting status falls back to the same Saved the trigger shows
+                (the column's default), so a pre-hydration submit still agrees
+                with the form. */}
             <Select name="status" defaultValue="Saved">
               <SelectTrigger id="status" className="w-full">
                 <SelectValue />
@@ -89,7 +109,7 @@ export default async function Home() {
                 ))}
               </SelectContent>
             </Select>
-          </div>
+          </Field>
 
           <Button type="submit" className="self-start">
             Add application
