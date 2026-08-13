@@ -1,0 +1,117 @@
+{
+  "id": "d42490be-a64d-4e5f-b7da-6274cb19a4d5",
+  "prevId": "647fd410-494f-4894-a4bb-b9958c30cda6",
+  "version": "7",
+  "dialect": "postgresql",
+  "tables": {
+    "tracker.applications": {
+      "name": "applications",
+      "schema": "tracker",
+      "columns": {
+        "id": {
+          "name": "id",
+          "type": "serial",
+          "primaryKey": true,
+          "notNull": true
+        },
+        "owner_id": {
+          "name": "owner_id",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "company_name": {
+          "name": "company_name",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "company_link": {
+          "name": "company_link",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "role_title": {
+          "name": "role_title",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "role_posting_link": {
+          "name": "role_posting_link",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "role_location": {
+          "name": "role_location",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "role_comp": {
+          "name": "role_comp",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "status": {
+          "name": "status",
+          "type": "application_status",
+          "typeSchema": "tracker",
+          "primaryKey": false,
+          "notNull": true,
+          "default": "'Saved'"
+        },
+        "created_at": {
+          "name": "created_at",
+          "type": "timestamp with time zone",
+          "primaryKey": false,
+          "notNull": true,
+          "default": "now()"
+        },
+        "updated_at": {
+          "name": "updated_at",
+          "type": "timestamp with time zone",
+          "primaryKey": false,
+          "notNull": true,
+          "default": "now()"
+        }
+      },
+      "indexes": {},
+      "foreignKeys": {},
+      "compositePrimaryKeys": {},
+      "uniqueConstraints": {},
+      "policies": {},
+      "checkConstraints": {},
+      "isRLSEnabled": false
+    }
+  },
+  "enums": {
+    "tracker.application_status": {
+      "name": "application_status",
+      "schema": "tracker",
+      "values": [
+        "Saved",
+        "Applied",
+        "Screen",
+        "Interview",
+        "Offer",
+        "Closed"
+      ]
+    }
+  },
+  "schemas": {
+    "tracker": "tracker"
+  },
+  "sequences": {},
+  "roles": {},
+  "policies": {},
+  "views": {},
+  "_meta": {
+    "columns": {},
+    "schemas": {},
+    "tables": {}
+  }
+}

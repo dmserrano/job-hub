@@ -5,15 +5,48 @@ import { pgSchema, serial, text, timestamp } from "drizzle-orm/pg-core";
 // configurable so integration tests can target a disposable tracker_test schema.
 export const trackerSchema = pgSchema(TRACKER_SCHEMA);
 
-// Minimal infrastructure table that proves connection + schema + migration
-// wiring end-to-end (issue #2). The real domain tables (Application and its
-// Activity log) arrive in #3; this is intentionally not a domain concept.
-export const connectionProbe = trackerSchema.table("connection_probe", {
+// Where an Application sits in the pipeline (CONTEXT.md glossary). Kept in the
+// tracker schema alongside the table that uses it.
+export const APPLICATION_STATUSES = [
+  "Saved",
+  "Applied",
+  "Screen",
+  "Interview",
+  "Offer",
+  "Closed",
+] as const;
+
+export const applicationStatus = trackerSchema.enum(
+  "application_status",
+  APPLICATION_STATUSES,
+);
+
+// The central entity: one row per role being pursued (CONTEXT.md glossary).
+// Owner-scoped from day one (ADR-0001). Company and Role are lightweight
+// embedded fields for now rather than their own tables.
+export const applications = trackerSchema.table("applications", {
   id: serial("id").primaryKey(),
-  note: text("note").notNull(),
+  ownerId: text("owner_id").notNull(),
+
+  // Company (embedded, lightweight — CONTEXT.md).
+  companyName: text("company_name").notNull(),
+  companyLink: text("company_link"),
+
+  // Role (embedded, lightweight — CONTEXT.md).
+  roleTitle: text("role_title").notNull(),
+  rolePostingLink: text("role_posting_link"),
+  roleLocation: text("role_location"),
+  roleComp: text("role_comp"),
+
+  status: applicationStatus("status").notNull().default("Saved"),
+
   createdAt: timestamp("created_at", { withTimezone: true })
+    .defaultNow()
+    .notNull(),
+  updatedAt: timestamp("updated_at", { withTimezone: true })
     .defaultNow()
     .notNull(),
 });
 
-export type ConnectionProbe = typeof connectionProbe.$inferSelect;
+export type ApplicationRow = typeof applications.$inferSelect;
+export type NewApplicationRow = typeof applications.$inferInsert;
