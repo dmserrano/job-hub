@@ -27,6 +27,8 @@ job search/aggregation) hang off it.
   another's tables. See ADR-0003.
 - **Stack:** Next.js (App Router) + TypeScript + React, Drizzle ORM, Postgres in Docker.
   See ADR-0005.
+- **Styling:** Tailwind v4 + shadcn/ui, plus domain design tokens for Status and urgency.
+  See ADR-0006.
 
 ## MVP scope (the wedge — Application Tracker)
 
@@ -81,6 +83,10 @@ Use these exact terms in code, issues, tests, and UI. Don't drift to synonyms.
   The timeline.
 - **Next action** — the single thing owed on an Application, with an optional due date. The
   field that makes the tracker change behavior day to day.
+- **Urgency** — how much attention an Application is owed right now. Derived, never stored:
+  **overdue** (Next action's due date has passed), **due soon** (due date approaching), and
+  **stale** (no Activity log entry in ~7 days). Drives the emphasis the table and dashboard
+  put on a row.
 - **Notes** — freeform, undated per-Application scratchpad (research, questions to ask, gut
   feelings, comp expectations). Distinct from the Activity log.
 

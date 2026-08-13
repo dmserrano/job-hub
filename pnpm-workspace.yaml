@@ -4,3 +4,5 @@ packages:
 allowBuilds:
   esbuild: true
   sharp: true
+  # ESLint's module resolver — its install script fetches the native binding.
+  unrs-resolver: true
